@@ -4,9 +4,8 @@ import dev.renatoneto.githubrepos.model.github.GithubPullRequest
 import dev.renatoneto.githubrepos.model.github.GithubRepository
 import dev.renatoneto.githubrepos.model.github.GithubUser
 import dev.renatoneto.githubrepos.network.github.data.GithubRepositoriesResponse
-import io.reactivex.Observable
 
-class GithubTestService : GithubDataSource {
+class GithubTestService {
 
     companion object {
 
@@ -31,11 +30,4 @@ class GithubTestService : GithubDataSource {
 
     }
 
-    override fun getRepositoriesList(page: Int): Observable<GithubRepositoriesResponse> {
-        return Observable.just(listResponse)
-    }
-
-    override fun getPullRequestsList(owner: String, repository: String): Observable<ArrayList<GithubPullRequest>> {
-        return Observable.just(pullRequestsResponse)
-    }
 }

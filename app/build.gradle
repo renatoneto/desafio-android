@@ -9,9 +9,7 @@ ext {
     appCompatVersion = '1.1.0-alpha03'
     materialVersion = '1.0.0'
 
-    rxKotlinVersion = '2.2.0'
-    rxJavaVersion = '2.2.7'
-    rxAndroidVersion = '2.1.1'
+    kotlinCoroutinesVersion = '1.1.1'
 
     koinVersion = '2.0.0-rc-1'
 
@@ -76,6 +74,8 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinCoroutinesVersion"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$kotlinCoroutinesVersion"
 
     implementation "androidx.constraintlayout:constraintlayout:$constraintLayoutVersion"
     implementation "androidx.appcompat:appcompat:$appCompatVersion"
@@ -86,12 +86,7 @@ dependencies {
     // retrofit
     implementation "com.squareup.retrofit2:retrofit:$retrofitVersion"
     implementation "com.squareup.retrofit2:converter-gson:$retrofitVersion"
-    implementation "com.squareup.retrofit2:adapter-rxjava2:$retrofitVersion"
-
-    // rx
-    implementation "io.reactivex.rxjava2:rxkotlin:$rxKotlinVersion"
-    implementation "io.reactivex.rxjava2:rxjava:$rxJavaVersion"
-    implementation "io.reactivex.rxjava2:rxandroid:$rxAndroidVersion"
+    implementation "com.jakewharton.retrofit:retrofit2-kotlin-coroutines-adapter:0.9.2"
 
     // okhttp
     implementation "com.squareup.okhttp3:okhttp:$okHttpVersion"
@@ -114,6 +109,7 @@ dependencies {
     testImplementation "org.mockito:mockito-core:$mockitoVersion"
     testImplementation "com.nhaarman:mockito-kotlin:$mockitoKotlinVersion"
     testImplementation "android.arch.core:core-testing:$archCoreTestingVersion"
+    testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:$kotlinCoroutinesVersion"
 
     androidTestImplementation "androidx.test:runner:$androidxTestVersion"
     androidTestImplementation "androidx.test:rules:$androidxTestVersion"

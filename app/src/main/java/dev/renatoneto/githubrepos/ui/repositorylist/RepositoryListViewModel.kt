@@ -1,14 +1,12 @@
 package dev.renatoneto.githubrepos.ui.repositorylist
 
 import androidx.lifecycle.MutableLiveData
-import dev.renatoneto.githubrepos.R
 import dev.renatoneto.githubrepos.base.BaseViewModel
 import dev.renatoneto.githubrepos.model.github.GithubRepository
 import dev.renatoneto.githubrepos.network.github.GithubDataSource
-import dev.renatoneto.githubrepos.util.rx.SchedulerContract
+import kotlinx.coroutines.launch
 
-class RepositoryListViewModel(private val repository: GithubDataSource,
-                              private val schedulers: SchedulerContract) : BaseViewModel() {
+class RepositoryListViewModel(val repository: GithubDataSource) : BaseViewModel() {
 
     var currentPage = 1
 
@@ -18,34 +16,34 @@ class RepositoryListViewModel(private val repository: GithubDataSource,
 
     val repositories = MutableLiveData<ArrayList<GithubRepository>>()
 
-    var erro: Int = 0
-
     fun loadRepositories() {
 
         if (currentPage != lastPageLoaded) {
 
-            loading.postValue(true)
-            error.postValue(null)
+            error.value = null
 
-            val disposable = repository.getRepositoriesList(currentPage)
-                .subscribeOn(schedulers.io())
-                .observeOn(schedulers.ui())
-                .subscribe({
+            jobs add launch {
 
-                    loading.postValue(false)
+                loading.value = true
 
-                    repositoriesList.addAll(it.items)
-                    repositories.postValue(repositoriesList)
+                try {
+
+                    val githubRepositoriesResponse = repository.getRepositoriesList(currentPage)
+                        .await()
+
+                    repositoriesList.addAll(githubRepositoriesResponse.items)
+
+                    repositories.value = repositoriesList
 
                     lastPageLoaded = currentPage
 
-                }, {
-                    loading.postValue(false)
-                    showError(it)
-                    erro = R.string.error_connection
-                })
+                } catch(t: Throwable) {
+                    showError(t)
+                } finally {
+                    loading.value = false
+                }
 
-            disposables.add(disposable)
+            }
 
         }
 

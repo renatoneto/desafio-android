@@ -6,12 +6,10 @@ import dev.renatoneto.githubrepos.base.BaseViewModel
 import dev.renatoneto.githubrepos.model.github.GithubPullRequest
 import dev.renatoneto.githubrepos.model.github.GithubRepository
 import dev.renatoneto.githubrepos.network.github.GithubDataSource
-import dev.renatoneto.githubrepos.util.rx.SchedulerContract
+import kotlinx.coroutines.launch
 
-class RepositoryDetailsViewModel(
-    private val repository: GithubDataSource,
-    val githubRepository: GithubRepository, private val schedulers: SchedulerContract
-) : BaseViewModel() {
+class RepositoryDetailsViewModel(private val repository: GithubDataSource,
+                                 val githubRepository: GithubRepository) : BaseViewModel() {
 
     var contentLoaded = false
 
@@ -24,33 +22,35 @@ class RepositoryDetailsViewModel(
         if (!contentLoaded) {
 
             contentLoaded = true
-            error.postValue(null)
+            error.value = null
 
-            loading.postValue(true)
+            jobs add launch {
 
-            val disposable = repository.getPullRequestsList(
-                githubRepository.owner.login,
-                githubRepository.name
-            )
-                .subscribeOn(schedulers.io())
-                .observeOn(schedulers.ui())
-                .subscribe({
+                loading.value = true
 
-                    loading.postValue(false)
+                try {
 
-                    pullRequestsList.addAll(it)
-                    pullRequests.postValue(pullRequestsList)
+                    val pullRequestsResponse = repository.getPullRequestsList(
+                        githubRepository.owner.login,
+                        githubRepository.name
+                    ).await()
+
+                    pullRequestsList.addAll(pullRequestsResponse)
+
+                    pullRequests.value = pullRequestsList
 
                     if (pullRequestsList.size == 0) {
-                        error.postValue(R.string.error_no_pull_requests)
+                        error.value = R.string.error_no_pull_requests
                     }
 
-                }, {
-                    loading.postValue(false)
-                    showError(it)
-                })
+                } catch(t: Throwable) {
+                    showError(t)
+                } finally {
+                    loading.value = false
+                }
 
-            disposables.add(disposable)
+
+            }
 
         }
 

@@ -1,6 +1,7 @@
 package dev.renatoneto.githubrepos.di
 
 import android.util.Log
+import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterFactory
 import dev.renatoneto.githubrepos.BuildConfig
 import dev.renatoneto.githubrepos.model.github.GithubRepository
 import dev.renatoneto.githubrepos.network.github.GithubApi
@@ -8,14 +9,11 @@ import dev.renatoneto.githubrepos.network.github.GithubDataSource
 import dev.renatoneto.githubrepos.network.github.GithubNetworkService
 import dev.renatoneto.githubrepos.ui.repositorydetails.RepositoryDetailsViewModel
 import dev.renatoneto.githubrepos.ui.repositorylist.RepositoryListViewModel
-import dev.renatoneto.githubrepos.util.rx.SchedulerContract
-import dev.renatoneto.githubrepos.util.rx.SchedulerProvider
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
 import retrofit2.Retrofit
-import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 
@@ -41,20 +39,12 @@ object AppModule {
 
     }
 
-    val rxModule = module {
-
-        single {
-            SchedulerProvider() as SchedulerContract
-        }
-
-    }
-
     val appModule = module {
 
-        viewModel { RepositoryListViewModel(get(), get()) }
+        viewModel { RepositoryListViewModel(get()) }
 
         viewModel { (githubRepository: GithubRepository) ->
-            RepositoryDetailsViewModel(get(), githubRepository, get())
+            RepositoryDetailsViewModel(get(), githubRepository)
         }
 
     }
@@ -78,7 +68,7 @@ object AppModule {
         val retrofit = Retrofit.Builder()
             .baseUrl(apiUrl)
             .client(httpBuilder.build())
-            .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
+            .addCallAdapterFactory(CoroutineCallAdapterFactory())
             .addConverterFactory(GsonConverterFactory.create())
 
         return retrofit.build()

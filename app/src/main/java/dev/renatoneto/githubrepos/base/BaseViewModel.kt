@@ -3,16 +3,24 @@ package dev.renatoneto.githubrepos.base
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import dev.renatoneto.githubrepos.R
-import io.reactivex.disposables.CompositeDisposable
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import java.io.IOException
 
-abstract class BaseViewModel : ViewModel() {
+abstract class BaseViewModel : ViewModel(), CoroutineScope {
 
-    val disposables = CompositeDisposable()
+    override val coroutineContext = Dispatchers.Main
+
+    protected val jobs = ArrayList<Job>()
 
     val loading = MutableLiveData<Boolean>()
 
     val error = MutableLiveData<Int>()
+
+    infix fun ArrayList<Job>.add(job: Job) {
+        this.add(job)
+    }
 
     fun showError(throwable: Throwable) {
 
@@ -29,6 +37,12 @@ abstract class BaseViewModel : ViewModel() {
 
     override fun onCleared() {
         super.onCleared()
-        disposables.clear()
+        jobs.forEach {
+
+            if (!it.isCancelled) {
+                it.cancel()
+            }
+
+        }
     }
 }
